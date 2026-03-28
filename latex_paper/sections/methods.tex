@@ -1,0 +1,126 @@
+\section{Methods}
+
+\subsection{Problem Setup}
+
+Given a longitudinal SIGF clip
+\begin{equation}
+\mathcal{S}=\{(x_1,l_1,t_1),\dots,(x_T,l_T,t_T)\},
+\end{equation}
+where $x_i$ is the $i$-th visit image, $l_i$ is the visit label, and $t_i$ is the visit time, the goal is to predict the future visit state using the preceding history.
+
+In the current implementation, the clip length is fixed to
+\begin{equation}
+T=6.
+\end{equation}
+
+\subsection{Latent Representation}
+
+We reuse the pretrained first-stage autoencoder from tHPM-LDM. Each visit image is mapped into the latent space by
+\begin{equation}
+z_i = E(x_i),
+\end{equation}
+and the predicted future latent is decoded by
+\begin{equation}
+\hat{x}_T = D(\hat{z}_T).
+\end{equation}
+
+\subsection{Historical and Structural Conditioning}
+
+The current SCP-Flow implementation keeps the original historical and population conditions:
+\begin{equation}
+(c_h, c_p) = \mathrm{CondGen}(x_{1:T-1}, t_{1:T-1}, l_{1:T-1}).
+\end{equation}
+
+In addition, the model uses structure-related conditions from the last observed visit, including scalar structure descriptors and ROI crops:
+\begin{equation}
+s_{\mathrm{scalar}} = [\mathrm{vCDR}, \mathrm{OCOD}],
+\end{equation}
+\begin{equation}
+c_s = \mathrm{StructEnc}(s_{\mathrm{scalar}}, r_{\mathrm{disc}}, r_{\mathrm{polar}}).
+\end{equation}
+
+\subsection{Bridge Sampling and Flow Prediction}
+
+During training, an intermediate latent is sampled between the previous visit latent $z_{T-1}$ and the future visit latent $z_T$:
+\begin{equation}
+\tau \sim \mathcal{U}(0,1),
+\end{equation}
+\begin{equation}
+\mu_\tau = (1-\tau)z_{T-1} + \tau z_T,
+\end{equation}
+\begin{equation}
+\sigma_\tau = \sigma_b \sqrt{\tau(1-\tau)},
+\end{equation}
+\begin{equation}
+z_\tau = \mu_\tau + \sigma_\tau \epsilon, \qquad \epsilon \sim \mathcal{N}(0,I).
+\end{equation}
+
+The current progression flow forecaster is
+\begin{equation}
+(\hat{v}, \hat{z}_T, \widehat{\Delta t}, \hat{\sigma}, \hat{s})
+=
+F_\theta(z_\tau,\tau,c_h,c_p,c_s,z_{T-1}).
+\end{equation}
+
+The predicted future latent is parameterized as
+\begin{equation}
+\hat{z}_T = z_\tau + (1-\tau)\hat{v}.
+\end{equation}
+
+\subsection{Training Objectives}
+
+The current total loss is
+\begin{equation}
+\mathcal{L} =
+\lambda_v \mathcal{L}_{\mathrm{vel}}
++ \lambda_z \mathcal{L}_{\mathrm{target}}
++ \lambda_x \mathcal{L}_{\mathrm{recon}}
++ \lambda_t \mathcal{L}_{\mathrm{interval}}
++ \lambda_u \mathcal{L}_{\mathrm{uncertainty}}
++ \lambda_c \mathcal{L}_{\mathrm{consistency}}
++ \lambda_s \mathcal{L}_{\mathrm{structure}}.
+\end{equation}
+
+The individual terms are:
+\begin{equation}
+\mathcal{L}_{\mathrm{vel}} = \|\hat{v} - (z_T-z_{T-1})\|_2^2,
+\end{equation}
+\begin{equation}
+\mathcal{L}_{\mathrm{target}} = \|\hat{z}_T - z_T\|_2^2,
+\end{equation}
+\begin{equation}
+\mathcal{L}_{\mathrm{recon}} = \|\hat{x}_T - x_T\|_1,
+\end{equation}
+\begin{equation}
+\mathcal{L}_{\mathrm{interval}} = (\widehat{\Delta t} - (t_T-t_{T-1}))^2,
+\end{equation}
+\begin{equation}
+\mathcal{L}_{\mathrm{uncertainty}} = \frac{r}{\hat{\sigma}} + \log \hat{\sigma},
+\end{equation}
+where
+\begin{equation}
+r = \mathrm{mean}\big((\hat{z}_T-z_T)^2\big),
+\end{equation}
+\begin{equation}
+\mathcal{L}_{\mathrm{consistency}} =
+\|\Delta z_{\mathrm{pred}} - \Delta z_{\mathrm{hist}}\|_2^2,
+\end{equation}
+and
+\begin{equation}
+\mathcal{L}_{\mathrm{structure}} = \|\hat{s}-s^\star\|_2^2.
+\end{equation}
+
+\subsection{Inference}
+
+At test time, the current implementation uses one-step forecasting from the previous latent:
+\begin{equation}
+\tau = 0, \qquad z_\tau = z_{T-1},
+\end{equation}
+followed by
+\begin{equation}
+(\hat{v}, \hat{z}_T, \widehat{\Delta t}, \hat{\sigma}, \hat{s})
+=
+F_\theta(z_{T-1},0,c_h,c_p,c_s,z_{T-1}).
+\end{equation}
+
+The model then decodes $\hat{z}_T$ to obtain the future image prediction.

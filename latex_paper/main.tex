@@ -1,0 +1,49 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{mathtools}
+
+\geometry{margin=1in}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue
+}
+
+\title{SCP-Flow: Structure-Controllable Progression Flow for Longitudinal Glaucoma Forecasting}
+\author{Draft}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Glaucoma forecasting from longitudinal fundus imaging requires a future prediction model that preserves temporal progression patterns, leverages population-level priors, and remains robust under missing clinical follow-up. This paper framework introduces Structure-Controllable Progression Flow (SCP-Flow), a flow-based extension of tHPM-LDM that replaces latent diffusion future prediction with a history-conditioned progression flow while preserving the original historical and population conditioning modules. The framework is designed to support latent image forecasting, structure-aware conditioning, next-visit interval prediction, uncertainty estimation, and missing-visit robustness analysis.
+\end{abstract}
+
+\tableofcontents
+
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/methods}
+\input{sections/experiments}
+\input{sections/discussion}
+\input{sections/conclusion}
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

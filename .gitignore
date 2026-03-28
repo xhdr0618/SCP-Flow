@@ -1,0 +1,14 @@
+data/
+pre-trained/
+result/
+results/
+outputs/
+SIGF-database/
+SIGF-database.rar
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.ckpt
+*.pt
+*.pth

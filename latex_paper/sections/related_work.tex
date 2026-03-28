@@ -1,0 +1,17 @@
+\section{Related Work}
+
+\subsection{Longitudinal Glaucoma Forecasting}
+
+Longitudinal glaucoma forecasting aims to predict future visual status, disease progression, or future retinal appearance from historical ophthalmic observations. Prior work has explored both image-based and clinical time-series based approaches, with increasing emphasis on irregular visit intervals and patient-specific progression patterns.
+
+\subsection{Latent Generative Forecasting}
+
+Recent work has shown that latent-space generative models provide an effective way to model future ophthalmic images while reducing the computational burden of pixel-space generation. Diffusion-based forecasting models can capture complex future uncertainty, but often require expensive sampling and may not expose a direct progression field.
+
+\subsection{Flow-Based Temporal Modeling}
+
+Flow-based trajectory models directly parameterize temporal evolution and can provide a more explicit representation of disease progression in latent space. In the glaucoma setting, this is attractive because the disease often evolves gradually over time, making progression-aware latent transport a natural modeling choice.
+
+\subsection{Structure-Aware Retinal Modeling}
+
+Structural biomarkers such as cup-to-disc ratio and optic disc morphology are central to glaucoma assessment. ROI-based conditioning and structure-guided generation therefore offer a natural path toward more interpretable longitudinal forecasting.
